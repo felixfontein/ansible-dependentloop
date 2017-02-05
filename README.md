@@ -22,7 +22,7 @@ This plugin allows you to write something like:
 
 in a playbook. This yields the following output:
 
-    ok: [example.com] => (item={0: 1, 1: 4, 2: 41}) => {
+    ok: [localhost] => (item={0: 1, 1: 4, 2: 41}) => {
         "item": {
             "0": 1, 
             "1": 4, 
@@ -30,7 +30,7 @@ in a playbook. This yields the following output:
         }, 
         "msg": "1 4 41"
     }
-    ok: [example.com] => (item={0: 1, 1: 7, 2: 71}) => {
+    ok: [localhost] => (item={0: 1, 1: 7, 2: 71}) => {
         "item": {
             "0": 1, 
             "1": 7, 
@@ -38,7 +38,7 @@ in a playbook. This yields the following output:
         }, 
         "msg": "1 7 71"
     }
-    ok: [example.com] => (item={0: 2, 1: 5, 2: 52}) => {
+    ok: [localhost] => (item={0: 2, 1: 5, 2: 52}) => {
         "item": {
             "0": 2, 
             "1": 5, 
@@ -46,7 +46,7 @@ in a playbook. This yields the following output:
         }, 
         "msg": "2 5 52"
     }
-    ok: [example.com] => (item={0: 2, 1: 8, 2: 82}) => {
+    ok: [localhost] => (item={0: 2, 1: 8, 2: 82}) => {
         "item": {
             "0": 2, 
             "1": 8, 
