@@ -2,7 +2,7 @@
 
 This is a small [Ansible](https://github.com/ansible/ansible)
 [lookup plugin](http://docs.ansible.com/ansible/playbooks_lookups.html) which
-allows to do nested loops where the inner loops depend on the current item of
+allows to do nested loops where the inner loops depend on the current `item` of
 the outer loops.
 
 (That's something which is unfortunately not supported by Ansible by default,
@@ -16,11 +16,11 @@ This plugin allows you to write something like:
     - name: Test
       debug: msg="{{ item.0 }} {{ item.1 }} {{ item.2 }}"
       with_dependent:
-      - [1, 2]
-      - "[{{ item.0 + 3 }}, {{ item.0 + 6 }}]"
-      - "[{{ item.0 + item.1 * 10 }}]"
+      - "[1, 2]"
+      - "[item.0 + 3, item.0 + 6]"
+      - "[item.0 + item.1 * 10]"
 
-in a playbook. This yields the output:
+in a playbook. This yields the following output:
 
     ok: [example.com] => (item={0: 1, 1: 4, 2: 41}) => {
         "item": {
@@ -54,3 +54,7 @@ in a playbook. This yields the output:
         }, 
         "msg": "2 8 82"
     }
+
+Note that as opposed to an older (pre-Ansible-2.0) version of this plugin, the
+items in the list provided to `with_dependent` must not use `{{ }}`, as these
+are translated by Ansible before being passed to the plugin.
