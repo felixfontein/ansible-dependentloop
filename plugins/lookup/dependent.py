@@ -18,16 +18,16 @@ from ansible.template import Templar
 
 
 class LookupModule(LookupBase):
-    def __evaluate(self, expression, variables={}):
+    def __evaluate(self, expression, templar, variables={}):
         """Evaluate expression with templar.
 
         ``expression`` is the expression to evaluate.
         ``variables`` are the variables to use.
         """
-        templar = Templar(loader=self._templar._loader, variables=variables)
-        return templar.template("{}{}{}".format("{{", expression, "}}"))
+        templar.set_available_variables(variables)
+        return templar.template("{}{}{}".format("{{", expression, "}}"), cache=False)
 
-    def __process(self, result, terms, index, current, variables):
+    def __process(self, result, terms, index, current, templar, variables):
         """Fills ``result`` list with evaluated items.
 
         ``result`` is a list where the resulting items are placed.
@@ -48,20 +48,21 @@ class LookupModule(LookupBase):
         # Evaluate expression in current context
         vars = variables.copy()
         vars['item'] = data
-        items = self.__evaluate(terms[index], vars)
+        items = self.__evaluate(terms[index], templar, variables=vars)
 
         # Continue
         if isinstance(items, dict):
             for i, v in items.items():
                 current[index] = {'key': i, 'value': v}
-                self.__process(result, terms, index + 1, current, variables)
+                self.__process(result, terms, index + 1, current, templar, variables)
         else:
             for i in items:
                 current[index] = i
-                self.__process(result, terms, index + 1, current, variables)
+                self.__process(result, terms, index + 1, current, templar, variables)
 
     def run(self, terms, variables=None, **kwargs):
         result = []
         if len(terms) > 0:
-            self.__process(result, terms, 0, [None] * len(terms), variables)
+            templar = Templar(loader=self._templar._loader)
+            self.__process(result, terms, 0, [None] * len(terms), templar, variables)
         return result
