@@ -48,7 +48,10 @@ class LookupModule(LookupBase):
         # Evaluate expression in current context
         vars = variables.copy()
         vars['item'] = data
-        items = self.__evaluate(terms[index], templar, variables=vars)
+        try:
+            items = self.__evaluate(terms[index], templar, variables=vars)
+        except Exception as e:
+            raise Exception('Caught "{0}" while evaluating "{1}" with item == {2}'.format(e, terms[index], data))
 
         # Continue
         if isinstance(items, dict):
