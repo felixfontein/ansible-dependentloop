@@ -39,27 +39,30 @@ EXAMPLES = """
   when: item.0.value.active
   with_dependent:
   - admin_user_data
-  - item.0.value.ssh_keys
+  - "admin_ssh_keys[item.0.key]"
   loop_control:
     # Makes the output readable, so that it doesn't contain the whole subdictionaries and lists
     label: "{{ [item.0.key, 'active' if item.1.active else 'inactive', item.1.public_key] }}"
   vars:
     admin_user_data:
       admin1:
+        name: Alice
         active: yes
-        ssh_keys:
-        - private_key: keys/private_key_admin1.pem
-          public_key: keys/private_key_admin1.pub
-          active: yes
       admin2:
+        name: Bob
         active: yes
-        ssh_keys:
-        - private_key: keys/private_key_admin2.pem
-          public_key: keys/private_key_admin2.pub
-          active: yes
-        - private_key: keys/private_key_admin2-old.pem
-          public_key: keys/private_key_admin2-old.pub
-          active: no
+    admin_ssh_keys:
+      admin1:
+      - private_key: keys/private_key_admin1.pem
+        public_key: keys/private_key_admin1.pub
+        active: yes
+      admin2:
+      - private_key: keys/private_key_admin2.pem
+        public_key: keys/private_key_admin2.pub
+        active: yes
+      - private_key: keys/private_key_admin2-old.pem
+        public_key: keys/private_key_admin2-old.pub
+        active: no
 
 - name: Update DNS records
   route53:
@@ -109,6 +112,7 @@ RETURN = """
 
 from ansible.plugins.lookup import LookupBase
 from ansible.template import Templar
+from ansible.errors import AnsibleError
 
 
 class LookupModule(LookupBase):
@@ -139,13 +143,17 @@ class LookupModule(LookupBase):
             result.append(data)
             return
 
-        # Evaluate expression in current context
-        vars = variables.copy()
-        vars['item'] = data
-        try:
-            items = self.__evaluate(terms[index], templar, variables=vars)
-        except Exception as e:
-            raise Exception('Caught "{0}" while evaluating "{1}" with item == {2}'.format(e, terms[index], data))
+        if isinstance(terms[index], (dict, list, tuple)):
+            # Use lists, dicts and tuples directly
+            items = terms[index]
+        else:
+            # Evaluate expression in current context
+            vars = variables.copy()
+            vars['item'] = data
+            try:
+                items = self.__evaluate(terms[index], templar, variables=vars)
+            except Exception as e:
+                raise AnsibleError('Caught "{0}" while evaluating "{1}" with item == {2}'.format(e, terms[index], data))
 
         # Continue
         if isinstance(items, dict):
