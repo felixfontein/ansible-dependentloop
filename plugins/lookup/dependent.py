@@ -17,8 +17,7 @@ __metaclass__ = type
 
 DOCUMENTATION = """
     lookup: dependent
-    version_added: "2.7"
-    short_description: composes a list with nested elements of other lists, where the other lists can depend on the previous indices
+    short_description: composes a list with nested elements of other lists or dicts which can depend on previous indices
     description:
         - "Takes the input lists and returns a list with elements that are lists, dictionaries,
            or template expressions which evaluate to lists or dicts, composed of the elements of
@@ -116,14 +115,16 @@ from ansible.errors import AnsibleError
 
 
 class LookupModule(LookupBase):
-    def __evaluate(self, expression, templar, variables={}):
+    def __evaluate(self, expression, templar, variables=None):
         """Evaluate expression with templar.
 
         ``expression`` is the expression to evaluate.
         ``variables`` are the variables to use.
         """
+        if variables is None:
+            vaiables = {}
         templar.set_available_variables(variables)
-        return templar.template("{}{}{}".format("{{", expression, "}}"), cache=False)
+        return templar.template("{0}{1}{2}".format("{{", expression, "}}"), cache=False)
 
     def __process(self, result, terms, index, current, templar, variables):
         """Fills ``result`` list with evaluated items.
@@ -136,7 +137,7 @@ class LookupModule(LookupBase):
         ``variables`` are the variables currently available.
         """
         # Prepare current state (value of 'item')
-        data = {i: current[i] for i in range(index)}
+        data = dict((i, current[i]) for i in range(index))
 
         # If we are done, add to result list:
         if index == len(terms):
@@ -157,8 +158,8 @@ class LookupModule(LookupBase):
 
         # Continue
         if isinstance(items, dict):
-            for i, v in items.items():
-                current[index] = {'key': i, 'value': v}
+            for i, v in sorted(items.items()):
+                current[index] = dict([('key', i), ('value', v)])
                 self.__process(result, terms, index + 1, current, templar, variables)
         else:
             for i in items:
