@@ -2,9 +2,25 @@
 - name: Test for with_dependent plugin
   hosts: localhost
   tasks:
-    - name: Test
+    - name: "Test 1: using with with_dependent"
       debug: msg="{{ item.0 }} {{ item.1 }} {{ item.2 }}"
       with_dependent:
-      - "[1, 2]"
+      - [1, 2]
       - "[item.0 + 3, item.0 + 6]"
       - "[item.0 + item.1 * 10]"
+    - name: "Test 2: using with loop"
+      debug: msg="{{ item.0 }} {{ item.1 }} {{ item.2 }}"
+      loop: "{{ query('dependent', [1, 2], '[item.0 + 3, item.0 + 6]', '[item.0 + item.1 * 10]') }}"
+    - name: "Test 3: using with with_dependent, simplified loop label"
+      debug: msg="{{ item.0 }} {{ item.1 }} {{ item.2 }}"
+      with_dependent:
+      - [1, 2]
+      - "[item.0 + 3, item.0 + 6]"
+      - "[item.0 + item.1 * 10]"
+      loop_control:
+        label: "{{ [item.0, item.1, item.2] }}"
+    - name: "Test 4: using with loop, simplified loop label"
+      debug: msg="{{ item.0 }} {{ item.1 }} {{ item.2 }}"
+      loop: "{{ query('dependent', [1, 2], '[item.0 + 3, item.0 + 6]', '[item.0 + item.1 * 10]') }}"
+      loop_control:
+        label: "{{ [item.0, item.1, item.2] }}"
