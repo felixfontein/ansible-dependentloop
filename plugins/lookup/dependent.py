@@ -1,17 +1,6 @@
-# Copyright (c) 2015-2018, Felix Fontein <felix@fontein.de>
-#
-# This plugin is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This plugin is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this plugin.  If not, see <http://www.gnu.org/licenses/>.
+# (c) 2015-2018, Felix Fontein <felix@fontein.de>
+# (c) 2018 Ansible Project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
@@ -36,9 +25,11 @@ EXAMPLES = """
     key: "{{ lookup('file', item.1.public_key) }}"
     state: "{{ 'present' if item.1.active else 'absent' }}"
   when: item.0.value.active
-  with_dependent:
-  - admin_user_data
-  - "admin_ssh_keys[item.0.key]"
+  loop: "{{ lookup('dependent', admin_user_data, 'admin_ssh_keys[item.0.key]') }}"
+  # Alternatively, you could also use the old with_* syntax:
+  #   with_dependent:
+  #   - admin_user_data
+  #   - "admin_ssh_keys[item.0.key]"
   loop_control:
     # Makes the output readable, so that it doesn't contain the whole subdictionaries and lists
     label: "{{ [item.0.key, 'active' if item.1.active else 'inactive', item.1.public_key] }}"
@@ -75,10 +66,10 @@ EXAMPLES = """
   loop_control:
     # Makes the output readable, so that it doesn't contain the whole subdictionaries and lists
     label: "{{ [item.0.key, item.1.key, item.2.key, item.2.value.get('ttl', 3600), item.2.value.get('absent', False), item.2.value.value] }}"
-  with_dependent:
-  - "dns_setup"
-  - "item.0.value"
-  - "item.1.value"
+  loop: "{{ lookup('dependent', dns_setup, 'item.0.value', 'item.1.value') }}"
+  # Alternatively, you can also do:
+  #   loop: "{{ lookup('dependent', 'dns_setup', 'item.0.value', 'item.1.value') }}"
+  # the dependent lookup will evaluate 'dns_setup'.
   vars:
     dns_setup:
       example.com:
@@ -167,6 +158,7 @@ class LookupModule(LookupBase):
                 self.__process(result, terms, index + 1, current, templar, variables)
 
     def run(self, terms, variables=None, **kwargs):
+        """Generate list."""
         result = []
         if len(terms) > 0:
             templar = Templar(loader=self._templar._loader)
