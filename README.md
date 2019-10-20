@@ -8,6 +8,9 @@ the outer loops.
 (That's something which is unfortunately not supported by Ansible by default,
 but sometimes needed, for example for more complex deployment setups.)
 
+The current version requires Ansible 2.9 (and will stop printing deprecation
+warnings for Ansible 2.9). Older versions work with Ansible >= 2.0.
+
 See `ansible.cfg.sample` for how to include this plugin into your local Ansible
 setup.
 
@@ -54,7 +57,3 @@ in a playbook. This yields the following output:
         }, 
         "msg": "2 8 82"
     }
-
-Note that as opposed to an older (pre-Ansible-2.0) version of this plugin, the
-items in the list provided to `with_dependent` must not use `{{ }}`, as these
-are translated by Ansible before being passed to the plugin.
