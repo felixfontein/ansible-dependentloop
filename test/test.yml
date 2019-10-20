@@ -51,15 +51,29 @@
           - E
           - F
           - G
-    - debug: msg="{{ dependent.results[0]['_ansible_item_label'] }}"
+    - debug: msg="{{ dependent.results[0].item }}"
     - name: Verify dependent lookup
       assert:
         that:
             - (dependent.results | length) == 7
-            - dependent.results[0]['_ansible_item_label'] == ["a", 1, "A"]
-            - dependent.results[1]['_ansible_item_label'] == ["a", 1, "B"]
-            - dependent.results[2]['_ansible_item_label'] == ["a", 2, "C"]
-            - dependent.results[3]['_ansible_item_label'] == ["b", 3, "D"]
-            - dependent.results[4]['_ansible_item_label'] == ["b", 4, "E"]
-            - dependent.results[5]['_ansible_item_label'] == ["b", 4, "F"]
-            - dependent.results[6]['_ansible_item_label'] == ["b", 4, "G"]
+            - dependent.results[0].item.0.key == "a"
+            - dependent.results[0].item.1 == 1
+            - dependent.results[0].item.2 == "A"
+            - dependent.results[1].item.0.key == "a"
+            - dependent.results[1].item.1 == 1
+            - dependent.results[1].item.2 == "B"
+            - dependent.results[2].item.0.key == "a"
+            - dependent.results[2].item.1 == 2
+            - dependent.results[2].item.2 == "C"
+            - dependent.results[3].item.0.key == "b"
+            - dependent.results[3].item.1 == 3
+            - dependent.results[3].item.2 == "D"
+            - dependent.results[4].item.0.key == "b"
+            - dependent.results[4].item.1 == 4
+            - dependent.results[4].item.2 == "E"
+            - dependent.results[5].item.0.key == "b"
+            - dependent.results[5].item.1 == 4
+            - dependent.results[5].item.2 == "F"
+            - dependent.results[6].item.0.key == "b"
+            - dependent.results[6].item.1 == 4
+            - dependent.results[6].item.2 == "G"
