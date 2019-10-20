@@ -114,7 +114,7 @@ class LookupModule(LookupBase):
         """
         if variables is None:
             vaiables = {}
-        templar.set_available_variables(variables)
+        templar.available_variables = variables
         return templar.template("{0}{1}{2}".format("{{", expression, "}}"), cache=False)
 
     def __process(self, result, terms, index, current, templar, variables):
